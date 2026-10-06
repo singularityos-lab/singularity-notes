@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="dev.sinty.notes" path="/dev/sinty/notes/">
+    <key name="sync-account" type="s">
+      <default>''</default>
+      <summary>Sync account</summary>
+      <description>Id of the online account the notes are synced with, from Online Accounts; empty keeps the notes on this computer only.</description>
+    </key>
+    <key name="sync-interval" type="i">
+      <range min="1" max="120"/>
+      <default>5</default>
+      <summary>Sync interval</summary>
+      <description>Minutes between two automatic syncs.</description>
+    </key>
+    <key name="sync-on-edit" type="b">
+      <default>true</default>
+      <summary>Sync after editing</summary>
+      <description>Sync a few seconds after a note changes, instead of waiting for the next automatic sync.</description>
+    </key>
+    <key name="lock-after" type="i">
+      <range min="0" max="240"/>
+      <default>10</default>
+      <summary>Lock protected sections after</summary>
+      <description>Minutes without using a password protected section before it locks again; 0 keeps it open until Notes closes.</description>
+    </key>
+    <key name="recognize-images" type="b">
+      <default>true</default>
+      <summary>Recognize the text in pictures</summary>
+      <description>Read the text of pictures and printouts with the text recognition service so searches find it.</description>
+    </key>
+    <key name="last-view" type="s">
+      <default>'all'</default>
+      <summary>Last view</summary>
+      <description>The list shown when the window opens: all, pinned or folder:NAME.</description>
+    </key>
+    <key name="last-note" type="s">
+      <default>''</default>
+      <summary>Last note</summary>
+      <description>Id of the note opened last.</description>
+    </key>
+  </schema>
+</schemalist>

@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Notes
+Comment=Notebooks with pages, drawings, tables, tags and recordings, synced with your accounts
+Exec=singularity-notes
+Icon=dev.sinty.notes
+Terminal=false
+Type=Application
+Categories=Office;Utility;
+Keywords=note;notes;notebook;onenote;memo;checklist;list;ink;drawing;tags;nextcloud;
+StartupWMClass=dev.sinty.notes
+Actions=new-note;
+
+[Desktop Action new-note]
+Name=New Page
+Exec=singularity-notes --new-note

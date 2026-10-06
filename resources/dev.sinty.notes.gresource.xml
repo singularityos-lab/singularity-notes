@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/dev/sinty/notes/icons">
+    <file>scalable/actions/notes-arrow-symbolic.svg</file>
+    <file>scalable/actions/notes-calendar-symbolic.svg</file>
+    <file>scalable/actions/notes-canvas-symbolic.svg</file>
+    <file>scalable/actions/notes-checklist.svg</file>
+    <file>scalable/actions/notes-code-symbolic.svg</file>
+    <file>scalable/actions/notes-contact-symbolic.svg</file>
+    <file>scalable/actions/notes-discuss-symbolic.svg</file>
+    <file>scalable/actions/notes-ellipse-symbolic.svg</file>
+    <file>scalable/actions/notes-equation-symbolic.svg</file>
+    <file>scalable/actions/notes-eraser-symbolic.svg</file>
+    <file>scalable/actions/notes-flag-symbolic.svg</file>
+    <file>scalable/actions/notes-idea-symbolic.svg</file>
+    <file>scalable/actions/notes-indent-symbolic.svg</file>
+    <file>scalable/actions/notes-lasso-symbolic.svg</file>
+    <file>scalable/actions/notes-line-symbolic.svg</file>
+    <file>scalable/actions/notes-link-page-symbolic.svg</file>
+    <file>scalable/actions/notes-list-numbered-symbolic.svg</file>
+    <file>scalable/actions/notes-marker-symbolic.svg</file>
+    <file>scalable/actions/notes-outdent-symbolic.svg</file>
+    <file>scalable/actions/notes-pen-symbolic.svg</file>
+    <file>scalable/actions/notes-phone-symbolic.svg</file>
+    <file>scalable/actions/notes-quote-symbolic.svg</file>
+    <file>scalable/actions/notes-reader-symbolic.svg</file>
+    <file>scalable/actions/notes-rect-symbolic.svg</file>
+    <file>scalable/actions/notes-rule-lines-symbolic.svg</file>
+    <file>scalable/actions/notes-rule-symbolic.svg</file>
+    <file>scalable/actions/notes-ruler-symbolic.svg</file>
+    <file>scalable/actions/notes-shape-symbolic.svg</file>
+    <file>scalable/actions/notes-subpage-symbolic.svg</file>
+    <file>scalable/actions/notes-table-symbolic.svg</file>
+    <file>scalable/actions/notes-tag-symbolic.svg</file>
+    <file>scalable/actions/notes-task-symbolic.svg</file>
+    <file>scalable/actions/notes-text-color-symbolic.svg</file>
+    <file>scalable/actions/notes-translate-symbolic.svg</file>
+    <file>scalable/actions/notes-triangle-symbolic.svg</file>
+    <file>scalable/actions/notes-width-symbolic.svg</file>
+  </gresource>
+</gresources>

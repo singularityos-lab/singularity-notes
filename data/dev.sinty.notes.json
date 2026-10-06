@@ -1,0 +1,36 @@
+{
+    "schema-id": "dev.sinty.notes",
+    "settings": [
+        {
+            "key": "sync-on-edit",
+            "label": "Sync After Editing",
+            "subtitle": "Send changes a few seconds after you stop typing",
+            "type": "boolean",
+            "widget": "toggle"
+        },
+        {
+            "key": "sync-interval",
+            "label": "Sync Every (minutes)",
+            "type": "int",
+            "widget": "spin",
+            "min": 1,
+            "max": 120
+        },
+        {
+            "key": "lock-after",
+            "label": "Lock Protected Sections After (minutes)",
+            "subtitle": "0 keeps them open until Notes closes",
+            "type": "int",
+            "widget": "spin",
+            "min": 0,
+            "max": 240
+        },
+        {
+            "key": "recognize-images",
+            "label": "Search Text in Pictures",
+            "subtitle": "Read pictures and printouts with text recognition",
+            "type": "boolean",
+            "widget": "toggle"
+        }
+    ]
+}

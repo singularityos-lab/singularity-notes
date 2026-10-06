@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export4.dtd">
+<en-export export-date="20260115T101500Z" application="Evernote" version="10.60.4">
+  <note>
+    <title>Trip checklist</title>
+    <created>20260110T083000Z</created>
+    <updated>20260112T190500Z</updated>
+    <tag>travel</tag>
+    <tag>todo</tag>
+    <note-attributes><author>Mirko</author></note-attributes>
+    <content>
+      <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note><h1>Before leaving</h1><div><en-todo checked="true"/>Book the hotel</div><div><en-todo checked="false"/>Pack the <b>charger</b></div><ul><li>Passport</li><li>Tickets</li></ul><div>See <a href="https://example.org/map">the map</a>.</div><div><en-media type="image/png" hash="c88654510b43083ee9f29490ebd4e5f6"/></div><table><tr><td>Day</td><td>City</td></tr><tr><td>1</td><td>Rome</td></tr></table></en-note>]]>
+    </content>
+    <resource>
+      <data encoding="base64">
+iVBORw0KGgoAAAANSUhEUgAAAAgAAAAGCAIAAABxZ0isAAAAEUlEQVR4nGM4oaGBFTEMpAQAgPc0
+gUXKIv0AAAAASUVORK5CYII=
+      </data>
+      <mime>image/png</mime>
+      <width>8</width>
+      <height>6</height>
+      <resource-attributes><file-name>red.png</file-name></resource-attributes>
+    </resource>
+  </note>
+  <note>
+    <title>Second note</title>
+    <created>20260111T090000Z</created>
+    <content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note><div>Plain <i>text</i> body</div></en-note>]]></content>
+  </note>
+</en-export>

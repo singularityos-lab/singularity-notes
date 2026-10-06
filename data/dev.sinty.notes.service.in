@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=dev.sinty.notes
+Exec=@bindir@/singularity-notes --gapplication-service
