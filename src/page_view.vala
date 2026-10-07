@@ -814,9 +814,10 @@ namespace Singularity.Apps.Notes {
             int line = ed.current_line();
             string text = ed.selected_text().strip();
             if (text == "") text = ed.line_text(line);
-            TaskBridge.ask(get_root() as Gtk.Window, text, title_entry.text.strip(), () => {
+            string uid = Uuid.string_random();
+            TaskBridge.ask(get_root() as Gtk.Window, text, title_entry.text.strip(), uid, () => {
                 ed.focus_line(line);
-                if (!ed.current_tags().contains("task")) ed.toggle_tag("task");
+                ed.toggle_tag(LinkedTasks.TAG_PREFIX + uid);
                 status(_("Task added to Tasks"));
             });
         }

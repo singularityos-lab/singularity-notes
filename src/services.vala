@@ -10,7 +10,7 @@ namespace Singularity.Apps.Notes {
             return ShareTargets.find_app_info(TASKS_APP) != null;
         }
 
-        public static void ask(Gtk.Window? parent, string text, string page_title, owned Closure done) {
+        public static void ask(Gtk.Window? parent, string text, string page_title, string uid, owned Closure done) {
             var app = (Gtk.Application) GLib.Application.get_default();
             var dialog = new ConfirmDialog(app, _("Add to Tasks"), "checkbox-checked", _("The task appears in Tasks with its due date and reminder."),
                 _("Add Task"), ConfirmDialog.ActionStyle.SUGGESTED);
@@ -46,7 +46,7 @@ namespace Singularity.Apps.Notes {
                     string title = entry.text.strip();
                     if (link.active && page_title != "") title += " (%s)".printf(page_title);
                     if (due != null) title += " " + due.format("%Y-%m-%d");
-                    ShareTargets.activate_app_action.begin(TASKS_APP, "add-task", new Variant.string(title));
+                    ShareTargets.activate_app_action.begin(TASKS_APP, "add-linked-task", new Variant("(ss)", uid, title));
                     done();
                 }
                 dialog.close_dialog();
@@ -55,6 +55,101 @@ namespace Singularity.Apps.Notes {
         }
 
         public delegate void Closure();
+    }
+
+    public class LinkedTasks {
+        public const string TAG_PREFIX = "task-";
+        private static Regex? check_line;
+        private static Regex? task_tag;
+
+        private static void ensure() {
+            if (check_line != null) return;
+            try {
+                check_line = new Regex("^\\s*[-*] \\[([ xX])\\] ");
+                task_tag = new Regex("\\[!task-([0-9a-f-]{8,})\\]");
+            } catch (RegexError e) {
+                warning("Linked tasks: %s", e.message);
+            }
+        }
+
+        public static Gee.HashMap<string, bool> states(string body) {
+            ensure();
+            var result = new Gee.HashMap<string, bool>();
+            if (check_line == null || !body.contains("[!task-")) return result;
+            foreach (string line in body.split("\n")) {
+                MatchInfo cm, tm;
+                if (!check_line.match(line, 0, out cm)) continue;
+                if (!task_tag.match(line, 0, out tm)) continue;
+                result[tm.fetch(1)] = cm.fetch(1) != " ";
+            }
+            return result;
+        }
+
+        public static void push(string? old_body, string new_body) {
+            if (!new_body.contains("[!task-")) return;
+            var before = states(old_body ?? "");
+            foreach (var e in states(new_body).entries) {
+                if (before.has_key(e.key) && before[e.key] == e.value) continue;
+                if (!before.has_key(e.key) && !e.value) continue;
+                ShareTargets.activate_app_action.begin(TaskBridge.TASKS_APP, "set-task-completed", new Variant("(sb)", e.key, e.value));
+            }
+        }
+
+        public static string apply(string body, Gee.Map<string, bool> done) {
+            ensure();
+            if (check_line == null || !body.contains("[!task-")) return body;
+            var lines = body.split("\n");
+            bool changed = false;
+            for (int i = 0; i < lines.length; i++) {
+                MatchInfo cm, tm;
+                if (!check_line.match(lines[i], 0, out cm)) continue;
+                if (!task_tag.match(lines[i], 0, out tm)) continue;
+                string uid = tm.fetch(1);
+                if (!done.has_key(uid)) continue;
+                bool is_done = cm.fetch(1) != " ";
+                if (is_done == done[uid]) continue;
+                int start, end;
+                cm.fetch_pos(1, out start, out end);
+                lines[i] = lines[i].substring(0, start) + (done[uid] ? "x" : " ") + lines[i].substring(end);
+                changed = true;
+            }
+            return changed ? string.joinv("\n", lines) : body;
+        }
+
+        public static Gee.HashMap<string, bool> read_tasks() {
+            var result = new Gee.HashMap<string, bool>();
+            string path = Path.build_filename(Environment.get_user_data_dir(), "singularity", "tasks", "tasks.json");
+            try {
+                var parser = new Json.Parser();
+                parser.load_from_file(path);
+                var root = parser.get_root();
+                if (root == null || root.get_node_type() != Json.NodeType.OBJECT || !root.get_object().has_member("tasks")) return result;
+                foreach (var node in root.get_object().get_array_member("tasks").get_elements()) {
+                    var t = node.get_object();
+                    if (t == null || !t.has_member("uid")) continue;
+                    result[t.get_string_member("uid")] = t.get_boolean_member_with_default("completed", false);
+                }
+            } catch (Error e) {
+            }
+            return result;
+        }
+
+        public static void sync_from_tasks(Singularity.Notes.NoteStore store) {
+            var done = read_tasks();
+            if (done.size == 0) return;
+            foreach (var n in store.all()) {
+                if (!n.body.contains("[!task-")) continue;
+                string updated = apply(n.body, done);
+                if (updated == n.body) continue;
+                var copy = n.copy();
+                copy.body = updated;
+                try {
+                    store.save(copy, false);
+                } catch (Error e) {
+                    warning("Linked tasks: %s", e.message);
+                }
+            }
+        }
     }
 
     [DBus (name = "dev.sinty.TranslateService")]

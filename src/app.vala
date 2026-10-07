@@ -37,6 +37,7 @@ namespace Singularity.Apps.Notes {
             locks = new SectionLocks(notebooks);
             locked_files = new LockedFiles(locks, store.dir);
             trash = new Trash(store.dir);
+            watch_tasks();
             web_access = new WebAccess(store, notebooks);
             trash.purge_old();
             history = new History(store.dir);
@@ -65,6 +66,7 @@ namespace Singularity.Apps.Notes {
             file_io.append(_("Import…"), "win.import");
             file_io.append(_("Export Page…"), "win.export-page");
             file_io.append(_("Export Section…"), "win.export-section");
+            file_io.append(_("Create Presentation"), "win.create-presentation");
             file_io.append(_("Print…"), "win.print");
             file_io.append(_("Share…"), "win.share");
             file_io.append(_("Save as Template…"), "win.save-template");
@@ -170,6 +172,21 @@ namespace Singularity.Apps.Notes {
             set_accels_for_action("app.quit", {"<Control>q"});
             set_accels_for_action("win.pin", {"<Control>d"});
             set_accels_for_action("win.delete", {"<Control>Delete"});
+        }
+
+        private FileMonitor? tasks_monitor;
+
+        private void watch_tasks() {
+            string path = Path.build_filename(Environment.get_user_data_dir(), "singularity", "tasks", "tasks.json");
+            try {
+                tasks_monitor = File.new_for_path(path).monitor_file(FileMonitorFlags.NONE);
+                tasks_monitor.changed.connect((f, o, ev) => {
+                    if (ev == FileMonitorEvent.CHANGES_DONE_HINT || ev == FileMonitorEvent.CREATED) LinkedTasks.sync_from_tasks(store);
+                });
+            } catch (Error e) {
+                warning("Notes: cannot watch Tasks: %s", e.message);
+            }
+            LinkedTasks.sync_from_tasks(store);
         }
 
         protected override void shutdown() {

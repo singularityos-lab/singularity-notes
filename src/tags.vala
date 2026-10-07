@@ -65,6 +65,7 @@ namespace Singularity.Apps.Notes {
         }
 
         public TagDef lookup(string id) {
+            if (id.has_prefix("task-")) return new TagDef(id, _("Task in Tasks"), "notes-task-symbolic");
             foreach (var t in all()) if (t.id == id) return t;
             return new TagDef(id, id, "notes-tag-symbolic");
         }

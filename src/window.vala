@@ -435,6 +435,7 @@ namespace Singularity.Apps.Notes {
                 { "import", () => import_files() },
                 { "save-template", () => save_as_template() },
                 { "share", () => share_current() },
+                { "create-presentation", () => create_presentation() },
                 { "tags", () => select_view(TAGS) },
                 { "trash", () => select_view(TRASH) },
                 { "lock-all", () => app.locks.lock_all() },
@@ -2013,6 +2014,8 @@ namespace Singularity.Apps.Notes {
         }
 
         private void save(Singularity.Notes.Note n, bool touch) {
+            var previous = store.lookup(n.id);
+            LinkedTasks.push(previous != null ? previous.body : null, n.body);
             try {
                 store.save(n, touch);
             } catch (Error e) {
@@ -2509,6 +2512,69 @@ namespace Singularity.Apps.Notes {
             Singularity.Print.run_callbacks.begin(this, pages[0].display_title(),
                 (fmt) => renderer.paginate(fmt.width, fmt.height, fmt.margin_left, fmt.margin_top, fmt.margin_right, fmt.margin_bottom),
                 (cr, index, fmt) => renderer.render_page(cr, index));
+        }
+
+        private void create_presentation() {
+            page.flush();
+            var n = store.lookup(current_id);
+            if (n == null) return;
+            string outline = outline_of(n.title, n.body);
+            if (outline == "") return;
+            ShareTargets.activate_app_action.begin("dev.sinty.slides", "new-from-outline", new Variant.string(outline));
+        }
+
+        internal static string outline_of(string title, string body) {
+            var sb = new StringBuilder();
+            bool slide_open = false;
+            bool in_code = false;
+            foreach (string raw in body.split("\n")) {
+                string line = raw.replace("\r", "");
+                string t = line.strip();
+                if (t.has_prefix("```")) {
+                    in_code = !in_code;
+                    continue;
+                }
+                if (in_code || t == "" || t.has_prefix("![") || t.has_prefix("<!--")) continue;
+                if (t.has_prefix("#")) {
+                    int h = 0;
+                    while (h < t.length && t[h] == '#') h++;
+                    string heading = plain(t.substring(h).strip());
+                    if (heading == "") continue;
+                    sb.append(heading).append_c('\n');
+                    slide_open = true;
+                    continue;
+                }
+                if (!slide_open) {
+                    sb.append(title != "" ? title : _("Untitled")).append_c('\n');
+                    slide_open = true;
+                }
+                int indent = 0;
+                while (indent < line.length && (line[indent] == ' ' || line[indent] == '\t')) indent += line[indent] == '\t' ? 2 : 1;
+                int level = 1 + indent / 2;
+                string item = t;
+                foreach (string mark in new string[] { "- [ ] ", "- [x] ", "- [X] ", "- ", "* ", "+ ", "> " }) {
+                    if (item.has_prefix(mark)) {
+                        item = item.substring(mark.length);
+                        break;
+                    }
+                }
+                int dot = item.index_of(". ");
+                if (dot > 0 && dot <= 3 && uint64.try_parse(item.substring(0, dot))) item = item.substring(dot + 2);
+                item = plain(item);
+                if (item == "") continue;
+                for (int i = 0; i < level.clamp(1, 5); i++) sb.append_c('\t');
+                sb.append(item).append_c('\n');
+            }
+            return sb.str;
+        }
+
+        private static string plain(string text) {
+            string s = text.replace("**", "").replace("__", "").replace("`", "");
+            try {
+                s = new Regex("\\[([^\\]]*)\\]\\([^)]*\\)").replace(s, -1, 0, "\\1");
+            } catch (RegexError e) {
+            }
+            return s.strip();
         }
 
         private void share_current() {
