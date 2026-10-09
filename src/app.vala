@@ -392,6 +392,7 @@ namespace Singularity.Apps.Notes {
 .notes-text text {
     background: transparent;
     font-size: 15px;
+    caret-color: currentColor;
 }
 
 .notes-format-bar {

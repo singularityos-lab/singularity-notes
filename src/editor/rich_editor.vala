@@ -239,9 +239,7 @@ namespace Singularity.Apps.Notes {
             buffer.changed.connect(on_changed);
             buffer.mark_set.connect((loc, mark) => {
                 if (mark == buffer.get_insert()) {
-                    TextIter before = loc;
-                    bool beside = loc.get_child_anchor() != null || (before.backward_char() && before.get_child_anchor() != null);
-                    if (view.cursor_visible == beside) view.cursor_visible = !beside;
+                    view.cursor_visible = true;
                 }
                 if (mark == buffer.get_insert() && !loading) {
                     sync_typing();
