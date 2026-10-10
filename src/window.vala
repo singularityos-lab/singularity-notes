@@ -2310,6 +2310,16 @@ namespace Singularity.Apps.Notes {
             m.add_item(_("Export…"), "document-save-as-symbolic", () => export_dialog(false));
             m.add_item(_("Print…"), "document-print-symbolic", () => print_current());
             m.add_item(_("Share…"), "emblem-shared-symbolic", () => share_current());
+            if (NotesCollab.available() && !SectionLocks.is_locked_body(n.body)) {
+                string nid = n.id;
+                m.add_item(_("Send to…"), "document-send-symbolic", () => app.collab.send(nid, page_menu_bubble));
+                if (app.collab.is_shared(nid)) {
+                    m.add_item(_("Invite More People…"), "system-users-symbolic", () => app.collab.share(nid, page_menu_bubble));
+                    m.add_item(_("Stop Working Together"), "process-stop-symbolic", () => app.collab.stop(nid));
+                } else {
+                    m.add_item(_("Work Together…"), "system-users-symbolic", () => app.collab.share(nid, page_menu_bubble));
+                }
+            }
             m.add_separator();
             m.add_item(_("Delete Page"), "user-trash-symbolic", () => delete_current());
         }

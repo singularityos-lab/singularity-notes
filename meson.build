@@ -86,6 +86,8 @@ ui_sources = files(
   'src/ribbon.vala',
   'src/dialogs.vala',
   'src/services.vala',
+  'src/notes_bus.vala',
+    'src/collab.vala',
 )
 
 notes_deps = [gtk_dep, gee_dep, gio_dep, json_dep, soup_dep, gst_dep, poppler_dep, xml_dep, zlib_dep, gnutls_dep, pangocairo_dep, m_dep, libsingularity_dep]
@@ -146,6 +148,12 @@ shared_module('singularity-notes-widget',
 )
 install_data('widget/dev.sinty.notes.pinned.widget',
   install_dir: get_option('datadir') / 'singularity' / 'widgets'
+)
+
+install_data('data/capabilities/dev.sinty.Collab.Note1.ini',
+  install_dir: get_option('datadir') / 'singularity' / 'capabilities')
+install_data('data/capabilities/dev.sinty.Notes1.ini',
+  install_dir: get_option('datadir') / 'singularity' / 'capabilities'
 )
 
 install_data('data/share-targets/dev.sinty.notes.clip.ini',

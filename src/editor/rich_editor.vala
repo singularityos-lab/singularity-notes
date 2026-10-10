@@ -307,9 +307,9 @@ namespace Singularity.Apps.Notes {
             links.append(_("Link to a Page or Section…"), "note.link-page");
             extra.append_section(null, links);
             var tools = new GLib.Menu();
-            tools.append(_("Add to Tasks…"), "note.add-task");
-            tools.append(_("Translate…"), "note.translate");
-            extra.append_section(null, tools);
+            if (Capabilities.available(Contracts.TASKS)) tools.append(_("Add to Tasks…"), "note.add-task");
+            if (Capabilities.available(Contracts.TRANSLATION)) tools.append(_("Translate…"), "note.translate");
+            if (tools.get_n_items() > 0) extra.append_section(null, tools);
             var media = new GLib.Menu();
             media.append(_("Play Recording from Here"), "note.play-here");
             extra.append_section(null, media);

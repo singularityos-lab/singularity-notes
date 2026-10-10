@@ -4,10 +4,8 @@ using Singularity.Widgets;
 namespace Singularity.Apps.Notes {
 
     public class TaskBridge {
-        public const string TASKS_APP = "dev.sinty.tasks";
-
         public static bool available() {
-            return ShareTargets.find_app_info(TASKS_APP) != null;
+            return Capabilities.available(Contracts.TASKS);
         }
 
         public static void ask(Gtk.Window? parent, string text, string page_title, string uid, owned Closure done) {
@@ -46,7 +44,7 @@ namespace Singularity.Apps.Notes {
                     string title = entry.text.strip();
                     if (link.active && page_title != "") title += " (%s)".printf(page_title);
                     if (due != null) title += " " + due.format("%Y-%m-%d");
-                    ShareTargets.activate_app_action.begin(TASKS_APP, "add-linked-task", new Variant("(ss)", uid, title));
+                    Capabilities.call_and_forget(Contracts.TASKS, "AddLinkedTask", new Variant("(ss)", uid, title));
                     done();
                 }
                 dialog.close_dialog();
@@ -91,7 +89,7 @@ namespace Singularity.Apps.Notes {
             foreach (var e in states(new_body).entries) {
                 if (before.has_key(e.key) && before[e.key] == e.value) continue;
                 if (!before.has_key(e.key) && !e.value) continue;
-                ShareTargets.activate_app_action.begin(TaskBridge.TASKS_APP, "set-task-completed", new Variant("(sb)", e.key, e.value));
+                Capabilities.call_and_forget(Contracts.TASKS, "SetCompleted", new Variant("(sb)", e.key, e.value));
             }
         }
 
@@ -116,26 +114,24 @@ namespace Singularity.Apps.Notes {
             return changed ? string.joinv("\n", lines) : body;
         }
 
-        public static Gee.HashMap<string, bool> read_tasks() {
-            var result = new Gee.HashMap<string, bool>();
-            string path = Path.build_filename(Environment.get_user_data_dir(), "singularity", "tasks", "tasks.json");
-            try {
-                var parser = new Json.Parser();
-                parser.load_from_file(path);
-                var root = parser.get_root();
-                if (root == null || root.get_node_type() != Json.NodeType.OBJECT || !root.get_object().has_member("tasks")) return result;
-                foreach (var node in root.get_object().get_array_member("tasks").get_elements()) {
-                    var t = node.get_object();
-                    if (t == null || !t.has_member("uid")) continue;
-                    result[t.get_string_member("uid")] = t.get_boolean_member_with_default("completed", false);
-                }
-            } catch (Error e) {
+        public static async void sync_from_tasks(Singularity.Notes.NoteStore store) {
+            if (!TaskBridge.available()) return;
+            var uids = new Gee.HashSet<string>();
+            foreach (var n in store.all()) {
+                if (n.body.contains("[!task-")) uids.add_all(states(n.body).keys);
             }
-            return result;
-        }
-
-        public static void sync_from_tasks(Singularity.Notes.NoteStore store) {
-            var done = read_tasks();
+            if (uids.size == 0) return;
+            var done = new Gee.HashMap<string, bool>();
+            try {
+                var reply = yield Capabilities.call(Contracts.TASKS, "GetStates", new Variant("(^as)", uids.to_array()), new VariantType("(a{sb})"));
+                var iter = reply.get_child_value(0).iterator();
+                string uid;
+                bool completed;
+                while (iter.next("{sb}", out uid, out completed)) done[uid] = completed;
+            } catch (Error e) {
+                warning("Linked tasks: %s", e.message);
+                return;
+            }
             if (done.size == 0) return;
             foreach (var n in store.all()) {
                 if (!n.body.contains("[!task-")) continue;

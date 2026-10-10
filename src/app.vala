@@ -13,6 +13,7 @@ namespace Singularity.Apps.Notes {
         public Templates templates { get; private set; }
         public LockedFiles locked_files { get; private set; }
         public WebAccess web_access { get; private set; }
+        public NotesCollab collab { get; private set; }
 
         private NotesWindow? window = null;
         private NotesSearch search_provider;
@@ -21,6 +22,24 @@ namespace Singularity.Apps.Notes {
             Object(application_id: "dev.sinty.notes", flags: ApplicationFlags.HANDLES_COMMAND_LINE);
             search_provider = new NotesSearch(this);
             search_provider.export(this);
+        }
+
+        private uint notes_bus_id = 0;
+        private uint collab_bus_id = 0;
+
+        public override bool dbus_register(DBusConnection connection, string object_path) throws Error {
+            if (!base.dbus_register(connection, object_path)) return false;
+            notes_bus_id = connection.register_object("/dev/sinty/notes/Notes", new NotesBus(this));
+            collab_bus_id = connection.register_object("/dev/sinty/notes/Collab", new NoteCollabBus(this));
+            return true;
+        }
+
+        public override void dbus_unregister(DBusConnection connection, string object_path) {
+            if (notes_bus_id != 0) connection.unregister_object(notes_bus_id);
+            notes_bus_id = 0;
+            if (collab_bus_id != 0) connection.unregister_object(collab_bus_id);
+            collab_bus_id = 0;
+            base.dbus_unregister(connection, object_path);
         }
 
         protected override void startup() {
@@ -32,6 +51,10 @@ namespace Singularity.Apps.Notes {
             var schemas = SettingsSchemaSource.get_default();
             if (schemas != null && schemas.lookup("dev.sinty.notes", true) != null) settings = new GLib.Settings("dev.sinty.notes");
             store = Singularity.Notes.NoteStore.get_default();
+            collab = new NotesCollab(this);
+            collab.status.connect((message) => {
+                if (window != null) window.add_toast(new Singularity.Widgets.Toast(message));
+            });
             notebooks = new Notebooks(store.dir);
             TagCatalog.get_default().notebooks = notebooks;
             locks = new SectionLocks(notebooks);
@@ -66,7 +89,7 @@ namespace Singularity.Apps.Notes {
             file_io.append(_("Import…"), "win.import");
             file_io.append(_("Export Page…"), "win.export-page");
             file_io.append(_("Export Section…"), "win.export-section");
-            file_io.append(_("Create Presentation"), "win.create-presentation");
+            if (Capabilities.has_app("dev.sinty.slides")) file_io.append(_("Create Presentation"), "win.create-presentation");
             file_io.append(_("Print…"), "win.print");
             file_io.append(_("Share…"), "win.share");
             file_io.append(_("Save as Template…"), "win.save-template");
@@ -107,7 +130,7 @@ namespace Singularity.Apps.Notes {
             view_menu.append(_("Recycle Bin"), "win.trash");
             view_menu.append(_("Math Assistant"), "win.math");
             view_menu.append(_("Immersive Reader"), "win.immersive-reader");
-            view_menu.append(_("Translate…"), "win.translate");
+            if (Capabilities.available(Contracts.TRANSLATION)) view_menu.append(_("Translate…"), "win.translate");
             var insert_menu = new GLib.Menu();
             insert_menu.append(_("Table"), "win.insert-table");
             insert_menu.append(_("Drawing Space"), "win.insert-drawing");
@@ -116,7 +139,7 @@ namespace Singularity.Apps.Notes {
             insert_menu.append(_("Record Video"), "win.record-video");
             insert_menu.append(_("Stop Recording"), "win.stop-recording");
             insert_menu.append(_("Transcribe Recordings"), "win.transcribe");
-            insert_menu.append(_("Add to Tasks…"), "win.add-task");
+            if (Capabilities.available(Contracts.TASKS)) insert_menu.append(_("Add to Tasks…"), "win.add-task");
             menu.append_submenu(_("Insert"), insert_menu);
             menu.append_submenu(_("View"), view_menu);
             var sync_menu = new GLib.Menu();
@@ -174,19 +197,20 @@ namespace Singularity.Apps.Notes {
             set_accels_for_action("win.delete", {"<Control>Delete"});
         }
 
-        private FileMonitor? tasks_monitor;
+        private uint tasks_signal = 0;
 
         private void watch_tasks() {
-            string path = Path.build_filename(Environment.get_user_data_dir(), "singularity", "tasks", "tasks.json");
+            var cap = Capabilities.lookup(Contracts.TASKS);
+            if (cap == null) return;
             try {
-                tasks_monitor = File.new_for_path(path).monitor_file(FileMonitorFlags.NONE);
-                tasks_monitor.changed.connect((f, o, ev) => {
-                    if (ev == FileMonitorEvent.CHANGES_DONE_HINT || ev == FileMonitorEvent.CREATED) LinkedTasks.sync_from_tasks(store);
+                var bus = Bus.get_sync(BusType.SESSION);
+                tasks_signal = bus.signal_subscribe(cap.bus_name, Contracts.TASKS, "Changed", cap.object_path, null, DBusSignalFlags.NONE, () => {
+                    LinkedTasks.sync_from_tasks.begin(store);
                 });
             } catch (Error e) {
                 warning("Notes: cannot watch Tasks: %s", e.message);
             }
-            LinkedTasks.sync_from_tasks(store);
+            LinkedTasks.sync_from_tasks.begin(store);
         }
 
         protected override void shutdown() {
@@ -332,6 +356,13 @@ namespace Singularity.Apps.Notes {
                 });
             }
             window.present();
+        }
+
+        public void open_note(string id) {
+            hold();
+            activate();
+            window.show_note(id);
+            release();
         }
 
         private const string CSS = """
