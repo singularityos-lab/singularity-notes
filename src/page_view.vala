@@ -789,7 +789,7 @@ namespace Singularity.Apps.Notes {
             EquationFiles.edit_and_save.begin(eq, notes_dir, note_id, get_root() as Gtk.Window, (o, r) => {
                 string? rel = EquationFiles.edit_and_save.end(r);
                 if (rel == null) {
-                    if (EquationFiles.last_error != "") status(EquationFiles.last_error);
+                    if (EquationFiles.last_error != null && EquationFiles.last_error != "") status(EquationFiles.last_error);
                     return;
                 }
                 ed.insert_block_at_cursor(RichText.image_block(eq.latex != "" ? eq.latex : eq.speech, rel, 0));

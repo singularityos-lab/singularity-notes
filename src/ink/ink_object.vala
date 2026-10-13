@@ -270,7 +270,7 @@ namespace Singularity.Apps.Notes {
             EquationFiles.edit_and_save.begin(eq, editor.notes_dir, editor.note_id, get_root() as Gtk.Window, (o, r) => {
                 string? rel = EquationFiles.edit_and_save.end(r);
                 if (rel == null) {
-                    if (EquationFiles.last_error != "") status(EquationFiles.last_error);
+                    if (EquationFiles.last_error != null && EquationFiles.last_error != "") status(EquationFiles.last_error);
                     return;
                 }
                 block.image = rel;
