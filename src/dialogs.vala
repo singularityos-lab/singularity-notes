@@ -73,7 +73,10 @@ namespace Singularity.Apps.Notes {
                     var def = TagCatalog.get_default().lookup(h.tag);
                     string label = h.tag == "todo" ? _("To Do") : def.label;
                     if (q != "" && !h.text.casefold().contains(q) && !label.casefold().contains(q)) continue;
-                    string key = grouping == "tag" ? label : grouping == "section" ? (n.folder != "" ? n.folder.replace("/", " › ") : _("Quick Notes")) : (titles[n.id] != "" ? titles[n.id] : _("Untitled Page"));
+                    string key;
+                    if (grouping == "tag") key = label;
+                    else if (grouping == "section") key = n.folder != "" ? n.folder.replace("/", " › ") : _("Quick Notes");
+                    else key = titles[n.id] != "" ? titles[n.id] : _("Untitled Page");
                     if (!groups.has_key(key)) groups[key] = new Gee.ArrayList<TagHit>();
                     groups[key].add(h);
                 }

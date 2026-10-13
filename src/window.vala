@@ -999,7 +999,8 @@ namespace Singularity.Apps.Notes {
                 while (f.has_prefix("/")) f = f.substring(1);
                 while (f.has_suffix("/")) f = f.substring(0, f.length - 1);
                 if (r == ConfirmDialog.Response.PRIMARY && f != "" && !f.contains("..")) {
-                    string local = open_existing ? (name_entry.text.strip() != "" ? name_entry.text.strip() : Notebooks.name_of(f)) : path;
+                    string local = path;
+                    if (open_existing) local = name_entry.text.strip() != "" ? name_entry.text.strip() : Notebooks.name_of(f);
                     local = local.replace("/", "-");
                     var info = app.notebooks.info(local);
                     info.kind_id = FolderKind.NOTEBOOK.to_id();
