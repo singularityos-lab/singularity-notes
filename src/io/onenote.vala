@@ -1147,7 +1147,7 @@ namespace Singularity.Apps.Notes {
             stamp(o);
             if (o.kind == 0x0E) {
                 if (o.flag(0x1CB5) || o.flag(0x1C87)) return;
-                string t = raw_text(o).replace("\n", " ").replace("\r", " ").replace("\u000b", " ").strip();
+                string t = raw_text(o).replace("\n", " ").replace("\r", " ").replace("\x0b", " ").strip();
                 if (t != "") parts.add(t);
                 return;
             }
@@ -1292,7 +1292,7 @@ namespace Singularity.Apps.Notes {
                 if (hidden || text == "") continue;
                 string href = url != "" ? url : link && pending_href != "" ? pending_href : "";
                 if (!link && url == "") pending_href = "";
-                string[] pieces = text.replace("\r\n", "\n").replace("\r", "\n").replace("\u000b", "\n").split("\n");
+                string[] pieces = text.replace("\r\n", "\n").replace("\r", "\n").replace("\x0b", "\n").split("\n");
                 for (int i = 0; i < pieces.length; i++) {
                     if (i > 0) {
                         current = new Gee.ArrayList<Span>();
@@ -1433,7 +1433,7 @@ namespace Singularity.Apps.Notes {
 
         private static string single_line(string text) {
             var sb = new StringBuilder();
-            foreach (string part in text.replace("\r", "\n").replace("\u000b", "\n").split("\n")) {
+            foreach (string part in text.replace("\r", "\n").replace("\x0b", "\n").split("\n")) {
                 string t = part.strip();
                 if (t == "") continue;
                 if (sb.len > 0) sb.append(" ");
