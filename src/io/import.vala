@@ -25,7 +25,7 @@ namespace Singularity.Apps.Notes {
             var s = session();
             var msg = new Soup.Message("GET", url);
             if (msg == null) throw new IOError.INVALID_ARGUMENT(_("The address is not valid"));
-            var bytes = yield s.send_and_read_async(msg, Priority.DEFAULT, cancellable);
+            var bytes = yield Singularity.HttpBody.read(s, msg, 32 * 1024 * 1024, Priority.DEFAULT, cancellable);
             if (msg.status_code >= 400) throw new IOError.FAILED(_("The page answered with error %u").printf(msg.status_code));
             string? ctype = msg.response_headers.get_content_type(null);
             var result = new ImportedNote();
@@ -86,7 +86,7 @@ namespace Singularity.Apps.Notes {
                     } else if (src.has_prefix("http://") || src.has_prefix("https://")) {
                         var msg = new Soup.Message("GET", src);
                         if (msg == null) continue;
-                        var bytes = yield s.send_and_read_async(msg, Priority.DEFAULT, cancellable);
+                        var bytes = yield Singularity.HttpBody.read(s, msg, 32 * 1024 * 1024, Priority.DEFAULT, cancellable);
                         if (msg.status_code >= 400 || bytes.get_size() == 0) continue;
                         string? ct = msg.response_headers.get_content_type(null);
                         if (ct != null && !ct.has_prefix("image/")) continue;
