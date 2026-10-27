@@ -399,7 +399,7 @@ namespace Singularity.Apps.Notes {
                     break;
                 case UnitKind.IMAGE:
                     try {
-                        var pix = new Gdk.Pixbuf.from_file_at_scale(u.image, (int) (u.image_w * 3), (int) (u.image_h * 3), true);
+                        var pix = Singularity.Compute.load_scaled(u.image, (int) (u.image_w * 3), (int) (u.image_h * 3), true);
                         cr.save();
                         cr.translate(0, y + 3);
                         cr.scale(u.image_w / pix.width, u.image_h / pix.height);
