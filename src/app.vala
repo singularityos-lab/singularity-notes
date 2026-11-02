@@ -44,6 +44,7 @@ namespace Singularity.Apps.Notes {
 
         protected override void startup() {
             base.startup();
+            NotesIntents.install(this);
             IconTheme.get_for_display(Gdk.Display.get_default()).add_resource_path("/dev/sinty/notes/icons");
             var provider = new CssProvider();
             provider.load_from_string(CSS);

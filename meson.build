@@ -87,6 +87,7 @@ ui_sources = files(
   'src/dialogs.vala',
   'src/services.vala',
   'src/notes_bus.vala',
+  'src/agent_intents.vala',
     'src/collab.vala',
 )
 
