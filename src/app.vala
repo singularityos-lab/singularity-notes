@@ -47,7 +47,7 @@ namespace Singularity.Apps.Notes {
             NotesIntents.install(this);
             IconTheme.get_for_display(Gdk.Display.get_default()).add_resource_path("/dev/sinty/notes/icons");
             var provider = new CssProvider();
-            provider.load_from_string(CSS);
+            provider.load_from_string(CSS + NoteRow.STYLE);
             StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, STYLE_PROVIDER_PRIORITY_USER + 1);
             var schemas = SettingsSchemaSource.get_default();
             if (schemas != null && schemas.lookup("dev.sinty.notes", true) != null) settings = new GLib.Settings("dev.sinty.notes");
@@ -381,26 +381,6 @@ namespace Singularity.Apps.Notes {
 .notes-list > row:selected {
     background-color: alpha(@accent_bg_color, 0.16);
     color: inherit;
-}
-
-.notes-row-title {
-    font-weight: 600;
-}
-
-.notes-subpage .notes-row-title {
-    font-weight: 500;
-}
-
-.notes-row-date {
-    font-size: 12px;
-    font-weight: 600;
-    opacity: 0.75;
-}
-
-.notes-row-snippet,
-.notes-row-folder {
-    font-size: 12px;
-    opacity: 0.6;
 }
 
 .notes-expander {

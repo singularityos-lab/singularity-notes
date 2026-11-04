@@ -59,13 +59,12 @@ namespace Singularity.Apps.Notes {
                     node.get_object().set_string_member("markdown", note.body);
                     return node;
                 });
-            agent.add_intent("note_create", "Create a note and show it.",
+            agent.add_intent("note_create", "Create a note.",
                 "{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\"},\"markdown\":{\"type\":\"string\"},\"folder\":{\"type\":\"string\"}},\"required\":[\"title\"]}",
                 Singularity.AppIntentRisk.UNDOABLE, (args) => {
                     string body = "# %s\n".printf(text(args, "title"));
                     if (text(args, "markdown") != "") body += "\n" + text(args, "markdown").chomp() + "\n";
                     var note = store().create(body, text(args, "folder"));
-                    app.activate_action("show-note", new Variant.string(note.id));
                     return brief(note);
                 });
             agent.add_intent("note_append", "Add Markdown at the end of a note, which stays open while it grows.",

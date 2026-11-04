@@ -97,6 +97,7 @@ executable('singularity-notes',
   model_sources + core_sources + ui_sources + files(
     'src/sync_controller.vala',
     'src/window.vala',
+    'src/note_row.vala',
     'src/search.vala',
     'src/app.vala',
   ) + [resources],
@@ -140,6 +141,16 @@ format_test = executable('notes-format-test',
   include_directories: crypto_inc,
 )
 test('notes-format', format_test, env: ['TMPDIR=' + meson.current_build_dir(), 'XDG_RUNTIME_DIR=' + meson.current_build_dir(), 'NOTES_FIXTURES=' + meson.current_source_dir() / 'tests' / 'fixtures'])
+
+shared_module('singularity-notes-card',
+  files('card/agent_card.vala', 'src/note_row.vala', 'src/page_doc.vala', 'src/rich_text.vala', 'src/sync_merge.vala'),
+  dependencies: [gtk_dep, gee_dep, json_dep, m_dep, libsingularity_dep],
+  install: true,
+  install_dir: get_option('libdir') / 'singularity' / 'cards'
+)
+install_data('card/dev.sinty.notes.card',
+  install_dir: get_option('datadir') / 'singularity' / 'cards'
+)
 
 shared_module('singularity-notes-widget',
   files('widget/pinned_widget.vala'),

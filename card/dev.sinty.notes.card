@@ -1,0 +1,5 @@
+[Card]
+App=dev.sinty.notes
+Intents=note_list;note_search;note_read;note_create;note_append
+Module=libsingularity-notes-card.so
+Symbol=singularity_notes_card_new
