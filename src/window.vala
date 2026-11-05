@@ -749,6 +749,8 @@ namespace Singularity.Apps.Notes {
             var menu = new GLib.Menu();
             build_sync_menu(menu);
             var popover = new PopoverMenu.from_model(menu);
+            popover.add_css_class("singularity-app-menu");
+            popover.has_arrow = false;
             popover.set_parent(sync_row);
             popover.position = PositionType.TOP;
             var owner = sync_row;
@@ -897,7 +899,7 @@ namespace Singularity.Apps.Notes {
             dialog.transient_for = this;
             string[] names = {};
             foreach (var a in accounts) names += a.display_name;
-            var drop = new DropDown.from_strings(names);
+            var drop = new ChoiceButton.from_strings(names);
             dialog.custom_area.append(drop);
             var folder = new Entry();
             folder.placeholder_text = _("Folder in the Cloud");

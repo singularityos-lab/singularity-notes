@@ -580,18 +580,15 @@ namespace Singularity.Apps.Notes {
             dialog.custom_area.append(cal);
             var time_row = new Box(Orientation.HORIZONTAL, 6);
             time_row.halign = Align.CENTER;
-            var hours = new SpinButton.with_range(0, 23, 1);
-            hours.value = when.get_hour();
-            var minutes = new SpinButton.with_range(0, 59, 1);
-            minutes.value = when.get_minute();
-            time_row.append(hours);
-            time_row.append(new Label(":"));
-            time_row.append(minutes);
+            var time_picker = new Singularity.Widgets.TimePicker();
+            time_picker.hour = when.get_hour();
+            time_picker.minute = when.get_minute();
+            time_row.append(time_picker);
             dialog.custom_area.append(time_row);
             dialog.response.connect((r) => {
                 if (r == Singularity.Widgets.ConfirmDialog.Response.PRIMARY) {
                     var d = cal.get_date();
-                    var t = new DateTime.local(d.get_year(), d.get_month(), d.get_day_of_month(), (int) hours.value, (int) minutes.value, 0);
+                    var t = new DateTime.local(d.get_year(), d.get_month(), d.get_day_of_month(), time_picker.hour, time_picker.minute, 0);
                     created = t.to_unix();
                     update_date_label();
                     date_changed(created);

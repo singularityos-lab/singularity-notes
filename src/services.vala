@@ -16,7 +16,7 @@ namespace Singularity.Apps.Notes {
             var entry = new Entry();
             entry.text = text;
             dialog.custom_area.append(entry);
-            var when = new DropDown.from_strings({ _("No Due Date"), _("Today"), _("Tomorrow"), _("This Week"), _("Next Week"), _("Choose a Date") });
+            var when = new ChoiceButton.from_strings({ _("No Due Date"), _("Today"), _("Tomorrow"), _("This Week"), _("Next Week"), _("Choose a Date") });
             dialog.custom_area.append(when);
             var cal = new Gtk.Calendar();
             cal.visible = false;
@@ -174,7 +174,7 @@ namespace Singularity.Apps.Notes {
             source.add_css_class("dim-label");
             source.max_width_chars = 60;
             box.append(source);
-            var langs = new DropDown.from_strings({ _("Default Language"), "English", "Italiano", "Deutsch", "Français", "Español", "Português", "Nederlands", "Polski", "Русский", "日本語", "中文" });
+            var langs = new ChoiceButton.from_strings({ _("Default Language"), "English", "Italiano", "Deutsch", "Français", "Español", "Português", "Nederlands", "Polski", "Русский", "日本語", "中文" });
             string[] codes = { "", "en", "it", "de", "fr", "es", "pt", "nl", "pl", "ru", "ja", "zh" };
             box.append(langs);
             var result = new Label(_("Translating…"));
