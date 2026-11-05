@@ -75,6 +75,31 @@ namespace Singularity.Apps.Notes {
                     store().save(note);
                     return brief(note);
                 });
+            agent.add_intent("note_update", "Change a note: markdown replaces the whole text, find and replace change every occurrence of a text, title renames its heading, folder moves it.",
+                "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"markdown\":{\"type\":\"string\"},\"find\":{\"type\":\"string\"},\"replace\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"folder\":{\"type\":\"string\"}},\"required\":[\"id\"]}",
+                Singularity.AppIntentRisk.UNDOABLE, (args) => {
+                    var note = find(args).copy();
+                    if (args.has_member("markdown")) note.body = text(args, "markdown").chomp() + "\n";
+                    if (text(args, "find") != "") {
+                        if (!note.body.contains(text(args, "find"))) throw new IOError.NOT_FOUND("the note does not contain \"%s\"".printf(text(args, "find")));
+                        note.body = note.body.replace(text(args, "find"), text(args, "replace"));
+                    }
+                    if (text(args, "title") != "") {
+                        string[] lines = note.body.split("\n");
+                        if (lines.length > 0 && lines[0].has_prefix("# ")) {
+                            lines[0] = "# " + text(args, "title");
+                            note.body = string.joinv("\n", lines);
+                        } else {
+                            note.body = "# %s\n\n%s".printf(text(args, "title"), note.body);
+                        }
+                    }
+                    if (args.has_member("folder")) note.folder = text(args, "folder");
+                    store().save(note);
+                    var saved = store().lookup(note.id);
+                    var node = brief(saved ?? note);
+                    node.get_object().set_boolean_member("verified", saved != null && saved.body == note.body && saved.folder == note.folder);
+                    return node;
+                });
             agent.add_intent("note_show", "Open a note in the window.", NOTE_ID,
                 Singularity.AppIntentRisk.READ, (args) => {
                     var note = find(args);
