@@ -44,13 +44,19 @@ namespace Singularity.Apps.Notes {
         }
 
         public async string? recognize(string file) {
+            return yield recognize_at(file, false);
+        }
+
+        private async string? recognize_at(string file, bool background) {
             var r = engine();
             if (!r.available) {
                 last_error = r.install_hint;
                 return null;
             }
             try {
-                var result = yield r.recognize_file(File.new_for_path(file));
+                Singularity.TextRecognition.RecognizedText result;
+                if (background) result = yield r.recognize_file_in_background(File.new_for_path(file));
+                else result = yield r.recognize_file(File.new_for_path(file));
                 string text = result.text;
                 store(file, text);
                 indexed(file);
@@ -102,7 +108,7 @@ namespace Singularity.Apps.Notes {
             while (queue.size > 0) {
                 string f = queue.remove_at(0);
                 if (cached_text(f) != null || !FileUtils.test(f, FileTest.EXISTS)) continue;
-                yield recognize(f);
+                yield recognize_at(f, true);
             }
             running = false;
         }
