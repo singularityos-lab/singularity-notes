@@ -1823,14 +1823,15 @@ namespace Singularity.Apps.Notes {
             var copy = new Gee.ArrayList<Stroke>();
             foreach (var s in strokes) copy.add(s.copy());
             string result = "";
-            SourceFunc resume = recognize_async.callback;
             busy = true;
-            new Thread<bool>("handwriting", () => {
-                result = recognize(copy);
-                Idle.add((owned) resume);
-                return true;
-            });
-            yield;
+            try {
+                yield Async.run<bool>((c) => {
+                    result = recognize(copy);
+                    return true;
+                }, Async.Qos.USER);
+            } catch (Error e) {
+                warning("%s", e.message);
+            }
             busy = false;
             return result;
         }
