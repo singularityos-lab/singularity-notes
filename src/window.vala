@@ -1919,7 +1919,7 @@ namespace Singularity.Apps.Notes {
             }
             string stored = seal_for(n.folder, body, n.id);
             n.body = stored;
-            save(n, true);
+            save(n, !page.cosmetic);
             app.history.record(n.id, n.serialize());
             editing = n.copy();
             string back = plain_body(n);

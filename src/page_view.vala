@@ -318,7 +318,10 @@ namespace Singularity.Apps.Notes {
             return doc.serialize();
         }
 
+        public bool cosmetic { get; private set; default = false; }
+
         private void schedule_emit() {
+            cosmetic = false;
             if (emit_source != 0) Source.remove(emit_source);
             emit_source = Timeout.add(live != null ? 120 : 500, () => {
                 emit_source = 0;
@@ -345,6 +348,7 @@ namespace Singularity.Apps.Notes {
             redo_stack.clear();
             last_body = body;
             edited(body);
+            cosmetic = false;
             if (live != null && live.connected) {
                 live.local_change(body);
                 live_seen = live.text;
@@ -553,12 +557,14 @@ namespace Singularity.Apps.Notes {
             doc.meta.background = color;
             apply_background();
             schedule_emit();
+            cosmetic = true;
         }
 
         public void set_rule(string rule) {
             doc.meta.rule = rule;
             apply_background();
             schedule_emit();
+            cosmetic = true;
         }
 
         public string background {
