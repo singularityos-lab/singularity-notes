@@ -36,7 +36,10 @@ namespace Singularity.Apps.Notes {
             add_css_class("notes-ink");
             var drag = new GestureDrag();
             drag.button = Gdk.BUTTON_PRIMARY;
-            drag.drag_begin.connect(on_begin);
+            drag.drag_begin.connect((x, y) => {
+                if (InkTools.get_default().drawing) drag.set_state(EventSequenceState.CLAIMED);
+                on_begin(x, y);
+            });
             drag.drag_update.connect(on_update);
             drag.drag_end.connect(on_end);
             add_controller(drag);

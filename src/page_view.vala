@@ -55,6 +55,7 @@ namespace Singularity.Apps.Notes {
         public PageView() {
             Object(orientation: Orientation.VERTICAL, spacing: 0);
             add_css_class("notes-page");
+            InkTools.get_default().notify["tool"].connect(ensure_ink_space);
 
             find_bar = new Singularity.Widgets.FindReplaceBar();
             find_bar.find_next.connect((q) => find_step(q, true));
@@ -678,6 +679,18 @@ namespace Singularity.Apps.Notes {
         public void insert_rule() {
             if (active_editor == null) return;
             active_editor.insert_block_at_cursor(new Block(BlockKind.RULE));
+        }
+
+        private void ensure_ink_space() {
+            var t = InkTools.get_default().tool;
+            if (t == InkTool.NONE || t == InkTool.ERASER || t == InkTool.LASSO) return;
+            if (!get_mapped() || active_editor == null || note_id == "" || doc.meta.is_canvas) return;
+            foreach (var o in active_editor.all_objects()) if (o is InkObject) return;
+            try {
+                active_editor.insert_block_at_cursor(InkObject.create_new(notes_dir, note_id, active_editor.available_width()));
+            } catch (Error e) {
+                status(_("The drawing space could not be added"));
+            }
         }
 
         public void insert_drawing() {
