@@ -20,11 +20,7 @@ namespace Singularity.Apps.Notes {
             add_css_class("notes-tag-summary");
             margin_start = 24;
             margin_end = 24;
-            margin_top = 16;
-            var title = new Label(_("Tag Summary"));
-            title.xalign = 0;
-            title.add_css_class("title-2");
-            append(title);
+            margin_top = 56;
             var bar = new Box(Orientation.HORIZONTAL, 8);
             filter = new Entry();
             filter.placeholder_text = _("Filter tags and text");
