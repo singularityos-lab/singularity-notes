@@ -578,6 +578,8 @@ namespace Singularity.Apps.Notes {
 .notes-bg-purple entry, .notes-bg-purple entry text, .notes-bg-purple .notes-page-header label, .notes-bg-purple .notes-canvas label { color: #1e1e22; }
 .notes-bg-grey entry, .notes-bg-grey entry text, .notes-bg-grey .notes-page-header label, .notes-bg-grey .notes-canvas label { color: #1e1e22; }
 .notes-bg-orange entry, .notes-bg-orange entry text, .notes-bg-orange .notes-page-header label, .notes-bg-orange .notes-canvas label { color: #1e1e22; }
+.notes-bg-yellow .notes-check check:not(:checked):not(:indeterminate), .notes-bg-green .notes-check check:not(:checked):not(:indeterminate), .notes-bg-blue .notes-check check:not(:checked):not(:indeterminate), .notes-bg-pink .notes-check check:not(:checked):not(:indeterminate), .notes-bg-purple .notes-check check:not(:checked):not(:indeterminate), .notes-bg-grey .notes-check check:not(:checked):not(:indeterminate), .notes-bg-orange .notes-check check:not(:checked):not(:indeterminate) { background-color: rgba(30, 30, 34, 0.06); background-image: none; border-color: rgba(30, 30, 34, 0.45); }
+.notes-bg-yellow .notes-check check:hover, .notes-bg-green .notes-check check:hover, .notes-bg-blue .notes-check check:hover, .notes-bg-pink .notes-check check:hover, .notes-bg-purple .notes-check check:hover, .notes-bg-grey .notes-check check:hover, .notes-bg-orange .notes-check check:hover { border-color: @accent_color; }
 
 .notes-trash-preview {
     font-size: 14px;
