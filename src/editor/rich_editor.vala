@@ -2,8 +2,24 @@ using Gtk;
 
 namespace Singularity.Apps.Notes {
 
-    public class NotesTextView : TextView {
+    public class NotesTextView : TextView, Singularity.Migration.Stateful {
         public signal void resized(int width);
+
+        public Variant? save_widget_state() {
+            TextIter ins, bound;
+            buffer.get_iter_at_mark(out ins, buffer.get_insert());
+            buffer.get_iter_at_mark(out bound, buffer.get_selection_bound());
+            return new Variant("(ii)", ins.get_offset(), bound.get_offset());
+        }
+
+        public void restore_widget_state(Variant state) {
+            int ins, bound;
+            state.get("(ii)", out ins, out bound);
+            TextIter a, b;
+            buffer.get_iter_at_offset(out a, ins);
+            buffer.get_iter_at_offset(out b, bound);
+            buffer.select_range(a, b);
+        }
         public string page_color { get; set; default = ""; }
         public string rule { get; set; default = ""; }
         private int last_width = -1;

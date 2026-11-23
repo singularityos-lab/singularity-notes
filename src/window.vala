@@ -2571,6 +2571,72 @@ namespace Singularity.Apps.Notes {
             page.flush();
         }
 
+        public void prepare_move() throws Singularity.Migration.MigrationError {
+            if (live_client != null) throw new Singularity.Migration.MigrationError.UNSUPPORTED(_("Leave the live page before moving Notes"));
+            var n = store.lookup(current_id);
+            if (n != null && SectionLocks.is_locked_body(n.body)) throw new Singularity.Migration.MigrationError.UNSUPPORTED(_("Pages in locked sections stay on this device"));
+            page.flush();
+        }
+
+        public Variant save_migration() {
+            var d = new VariantDict();
+            d.insert_value("view", new Variant.string(view));
+            d.insert_value("note", new Variant.string(current_id));
+            d.insert_value("collapsed-folders", new Variant.strv(sorted(collapsed_folders)));
+            d.insert_value("collapsed-pages", new Variant.strv(sorted(collapsed_pages)));
+            d.insert_value("history", page.save_history());
+            return d.end();
+        }
+
+        private static string[] sorted(Gee.Set<string> items) {
+            var list = new Gee.ArrayList<string>();
+            list.add_all(items);
+            list.sort((a, b) => strcmp(a, b));
+            return list.to_array();
+        }
+
+        public string[] migration_files() {
+            var found = new Gee.ArrayList<string>();
+            if (current_id == "" || store.lookup(current_id) == null) return {};
+            found.add(Singularity.Migration.portable_path(File.new_for_path(store.path_for(current_id))));
+            collect(File.new_for_path(Path.build_filename(store.dir, "attachments", current_id)), found);
+            return found.to_array();
+        }
+
+        private static void collect(File dir, Gee.ArrayList<string> found) {
+            try {
+                var e = dir.enumerate_children(FileAttribute.STANDARD_NAME + "," + FileAttribute.STANDARD_TYPE, FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+                var names = new Gee.ArrayList<FileInfo>();
+                FileInfo? info;
+                while ((info = e.next_file()) != null) names.add(info);
+                names.sort((a, b) => strcmp(a.get_name(), b.get_name()));
+                foreach (var i in names) {
+                    var child = dir.get_child(i.get_name());
+                    if (i.get_file_type() == FileType.DIRECTORY) collect(child, found);
+                    else if (i.get_file_type() == FileType.REGULAR) found.add(Singularity.Migration.portable_path(child));
+                }
+            } catch (Error e) {
+            }
+        }
+
+        public void restore_migration(Variant data) {
+            var d = new VariantDict(data);
+            store.load();
+            collapsed_folders.clear();
+            collapsed_pages.clear();
+            foreach (string f in (d.lookup_value("collapsed-folders", VariantType.STRING_ARRAY) ?? new Variant.strv({})).get_strv()) collapsed_folders.add(f);
+            foreach (string p in (d.lookup_value("collapsed-pages", VariantType.STRING_ARRAY) ?? new Variant.strv({})).get_strv()) collapsed_pages.add(p);
+            string wanted = (d.lookup_value("view", VariantType.STRING) ?? new Variant.string(ALL)).get_string();
+            select_view(valid_view(wanted) ? wanted : ALL);
+            string note = (d.lookup_value("note", VariantType.STRING) ?? new Variant.string("")).get_string();
+            if (note != "" && store.lookup(note) != null) {
+                open_note(note);
+                var history = d.lookup_value("history", new VariantType("(asass)"));
+                if (history != null) page.restore_history(history);
+            }
+            stack.visible_child_name = store.all().size == 0 && store.extra_folders().length == 0 ? "welcome" : "main";
+        }
+
         public PageView page_view() {
             return page;
         }

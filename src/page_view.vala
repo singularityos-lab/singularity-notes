@@ -501,6 +501,19 @@ namespace Singularity.Apps.Notes {
             get { return undo_stack.size > 0 || pending; }
         }
 
+        public Variant save_history() {
+            return new Variant("(@as@ass)", new Variant.strv(undo_stack.to_array()), new Variant.strv(redo_stack.to_array()), last_body);
+        }
+
+        public void restore_history(Variant history) {
+            undo_stack.clear();
+            redo_stack.clear();
+            foreach (string b in history.get_child_value(0).get_strv()) undo_stack.add(b);
+            foreach (string b in history.get_child_value(1).get_strv()) redo_stack.add(b);
+            last_body = history.get_child_value(2).get_string();
+            if (serialize() != last_body) load_body(last_body);
+        }
+
         public bool can_redo {
             get { return redo_stack.size > 0; }
         }

@@ -2,7 +2,7 @@ using Gtk;
 
 namespace Singularity.Apps.Notes {
 
-    public class NotesApp : Singularity.Application {
+    public class NotesApp : Singularity.Application, Singularity.Migration.Migratable {
         public Singularity.Notes.NoteStore store { get; private set; }
         public GLib.Settings? settings { get; private set; default = null; }
         public SyncController sync { get; private set; }
@@ -348,15 +348,49 @@ namespace Singularity.Apps.Notes {
         }
 
         protected override void activate() {
-            if (window == null) {
-                window = new NotesWindow(this);
-                window.close_request.connect(() => {
-                    window.flush();
-                    window = null;
-                    return false;
-                });
-            }
+            if (window == null) adopt(new NotesWindow(this));
             window.present();
+        }
+
+        private void adopt(NotesWindow w) {
+            window = w;
+            w.close_request.connect(() => {
+                w.flush();
+                if (window == w) window = null;
+                return false;
+            });
+        }
+
+        public void prepare_move() throws Singularity.Migration.MigrationError {
+            if (window != null) window.prepare_move();
+        }
+
+        public Variant save_model() {
+            return new VariantDict().end();
+        }
+
+        public async void restore_model(Variant model) throws Error {
+        }
+
+        public string window_kind(Gtk.Window w) {
+            return (w is NotesWindow) ? "notes" : "";
+        }
+
+        public Variant save_window(Gtk.Window w) {
+            return ((NotesWindow) w).save_migration();
+        }
+
+        public string[] files() {
+            return window != null ? window.migration_files() : new string[0];
+        }
+
+        public async Gtk.Window? rebuild_window(string kind, Variant data) throws Error {
+            if (kind != "notes") return null;
+            if (window != null) window.destroy();
+            var w = new NotesWindow(this);
+            adopt(w);
+            w.restore_migration(data);
+            return w;
         }
 
         public void open_note(string id) {
