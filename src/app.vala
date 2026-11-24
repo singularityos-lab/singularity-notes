@@ -2,7 +2,7 @@ using Gtk;
 
 namespace Singularity.Apps.Notes {
 
-    public class NotesApp : Singularity.Application, Singularity.Migration.Migratable {
+    public class NotesApp : Singularity.Application, Singularity.Migration.Migratable, Singularity.Startup.Bootable {
         public Singularity.Notes.NoteStore store { get; private set; }
         public GLib.Settings? settings { get; private set; default = null; }
         public SyncController sync { get; private set; }
@@ -157,26 +157,26 @@ namespace Singularity.Apps.Notes {
             add_action(quit_action);
             var show = new SimpleAction("show-note", VariantType.STRING);
             show.activate.connect((p) => {
-                activate();
+                show_window();
                 window.show_note(p.get_string());
             });
             add_action(show);
             var create = new SimpleAction("new-note", null);
             create.activate.connect(() => {
-                activate();
+                show_window();
                 window.new_note();
             });
             add_action(create);
 
             var clip_text = new SimpleAction("clip-text", VariantType.STRING);
             clip_text.activate.connect((p) => {
-                activate();
+                show_window();
                 clip(p.get_string());
             });
             add_action(clip_text);
             var clip_files = new SimpleAction("clip-files", new VariantType("as"));
             clip_files.activate.connect((p) => {
-                activate();
+                show_window();
                 clip_uris(p.get_strv());
             });
             add_action(clip_files);
@@ -347,7 +347,30 @@ namespace Singularity.Apps.Notes {
             window.show_note(n.id);
         }
 
-        protected override void activate() {
+        public Singularity.Startup.Plan build_plan(Singularity.Startup.Request request) {
+            var plan = new Singularity.Startup.Plan();
+            plan.version = "notes-1";
+            if (request.kind == Singularity.Startup.RequestKind.SERVICE) {
+                plan.main("ready", Singularity.Startup.Category.PREPARE, (c) => {})
+                    .reaches(Singularity.Startup.Milestone.SHELL_READY)
+                    .reaches(Singularity.Startup.Milestone.CONTENT_READY)
+                    .reaches(Singularity.Startup.Milestone.INTERACTIVE);
+                return plan;
+            }
+            plan.main("window", Singularity.Startup.Category.SHELL, (c) => {
+                show_window();
+                c.window = window;
+            }).reaches(Singularity.Startup.Milestone.SHELL_READY)
+              .reaches(Singularity.Startup.Milestone.CONTENT_READY)
+              .reaches(Singularity.Startup.Milestone.INTERACTIVE);
+            return plan;
+        }
+
+        public void handle_request(Singularity.Startup.Request request) {
+            show_window();
+        }
+
+        private void show_window() {
             if (window == null) adopt(new NotesWindow(this));
             window.present();
         }
@@ -395,7 +418,7 @@ namespace Singularity.Apps.Notes {
 
         public void open_note(string id) {
             hold();
-            activate();
+            show_window();
             window.show_note(id);
             release();
         }
